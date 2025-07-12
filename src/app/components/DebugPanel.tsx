@@ -1,4 +1,4 @@
-import { GameState, EffectType } from '../types/game';
+import { GameState } from '../types/game';
 
 interface DebugPanelProps {
   gameState: GameState;
@@ -58,7 +58,7 @@ export default function DebugPanel({ gameState }: DebugPanelProps) {
         </div>
         {gameState.activeEffects.length > 0 ? (
           <div className="ml-2">
-            {gameState.activeEffects.map((effect, index) => (
+            {gameState.activeEffects.map((effect) => (
               <div key={effect.id} className="mb-1 border-l-2 border-blue-500 pl-2">
                 <div className="text-blue-300">{effect.type}</div>
                 <div>Value: {effect.value}x</div>
@@ -83,7 +83,7 @@ export default function DebugPanel({ gameState }: DebugPanelProps) {
         </div>
         {gameState.effectNodes.length > 0 ? (
           <div className="ml-2">
-            {gameState.effectNodes.map((node, index) => (
+            {gameState.effectNodes.map((node) => (
               <div key={node.id} className="mb-1 border-l-2 border-blue-500 pl-2">
                 <div className="text-blue-300">{node.effectType}</div>
                 <div>Position: {formatPosition(node.position)}</div>

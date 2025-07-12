@@ -6,7 +6,6 @@ import {
   EffectType,
   ActiveEffect,
   Shard,
-  GRID_SIZE,
   EFFECT_CONFIGS,
 } from "../types/game";
 
@@ -135,9 +134,7 @@ export function getEffectColor(
 }
 
 export function generateShards(
-  centerPosition: Position,
-  gridWidth: number,
-  gridHeight: number
+  centerPosition: Position
 ): Shard[] {
   const shards: Shard[] = [];
   const directions = [

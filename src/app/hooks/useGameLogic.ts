@@ -72,7 +72,7 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
       );
       setGameState((prev) => ({ ...prev, food: initialFood }));
     }
-  }, [canvasSize]);
+  }, [canvasSize, gameState.food]);
 
   const resetGame = useCallback(() => {
     const newFood = generateFood(
@@ -212,9 +212,7 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
         if (consumedEffect.effectType === EffectType.EXPLODING_NODE) {
           // Generate shards from the exploding node
           const newShardsFromExplosion = generateShards(
-            consumedEffect.position,
-            gridWidth,
-            gridHeight
+            consumedEffect.position
           );
           newShards = [...newShards, ...newShardsFromExplosion];
         } else {
@@ -337,7 +335,7 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
         shards: newShards,
       };
     });
-  }, [gameStarted, canvasSize, saveHighScore]);
+  }, [gameStarted, canvasSize, saveHighScore, lastEffectSpawnTime]);
 
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
