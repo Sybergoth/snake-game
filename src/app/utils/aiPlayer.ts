@@ -1,9 +1,9 @@
-import { Position, GameState, Obstacle, EffectNode, Food, EffectType, GRID_SIZE } from '../types/game';
+import { Position, GameState, EffectType, GRID_SIZE } from "../types/game";
 
 export interface AITarget {
   position: Position;
   priority: number;
-  type: 'food' | 'effect' | 'avoid';
+  type: "food" | "effect" | "avoid";
 }
 
 export interface PathNode {
@@ -38,19 +38,29 @@ export class AIPlayer {
     // Check bounds (with wrapping)
     const normalizedPos = {
       x: ((pos.x % this.gridWidth) + this.gridWidth) % this.gridWidth,
-      y: ((pos.y % this.gridHeight) + this.gridHeight) % this.gridHeight
+      y: ((pos.y % this.gridHeight) + this.gridHeight) % this.gridHeight,
     };
 
     // Check snake body collision (excluding head as it will move)
     const snakeBody = gameState.snake.slice(1);
-    if (snakeBody.some(segment => segment.x === normalizedPos.x && segment.y === normalizedPos.y)) {
+    if (
+      snakeBody.some(
+        (segment) =>
+          segment.x === normalizedPos.x && segment.y === normalizedPos.y
+      )
+    ) {
       return false;
     }
 
     // Check obstacle collision
-    if (gameState.obstacles.some(obstacle =>
-      obstacle.positions.some(obstPos => obstPos.x === normalizedPos.x && obstPos.y === normalizedPos.y)
-    )) {
+    if (
+      gameState.obstacles.some((obstacle) =>
+        obstacle.positions.some(
+          (obstPos) =>
+            obstPos.x === normalizedPos.x && obstPos.y === normalizedPos.y
+        )
+      )
+    ) {
       return false;
     }
 
@@ -58,23 +68,29 @@ export class AIPlayer {
   }
 
   // Get all possible moves from current position
-  private getPossibleMoves(position: Position, currentDirection: Position, gameState: GameState): Position[] {
+  private getPossibleMoves(
+    position: Position,
+    currentDirection: Position,
+    gameState: GameState
+  ): Position[] {
     const moves: Position[] = [
       { x: 0, y: -1 }, // Up
-      { x: 0, y: 1 },  // Down
+      { x: 0, y: 1 }, // Down
       { x: -1, y: 0 }, // Left
-      { x: 1, y: 0 }   // Right
+      { x: 1, y: 0 }, // Right
     ];
 
-    return moves.filter(move => {
+    return moves.filter((move) => {
       // Don't reverse direction (180-degree turn)
-      if (currentDirection.x !== 0 && move.x === -currentDirection.x) return false;
-      if (currentDirection.y !== 0 && move.y === -currentDirection.y) return false;
+      if (currentDirection.x !== 0 && move.x === -currentDirection.x)
+        return false;
+      if (currentDirection.y !== 0 && move.y === -currentDirection.y)
+        return false;
 
       // Check if the resulting position is safe
       const newPos = {
         x: position.x + move.x,
-        y: position.y + move.y
+        y: position.y + move.y,
       };
 
       return this.isSafePosition(newPos, gameState);
@@ -82,7 +98,11 @@ export class AIPlayer {
   }
 
   // A* pathfinding algorithm
-  private findPath(start: Position, goal: Position, gameState: GameState): Position[] {
+  private findPath(
+    start: Position,
+    goal: Position,
+    gameState: GameState
+  ): Position[] {
     const openSet: PathNode[] = [];
     const closedSet: Set<string> = new Set();
 
@@ -91,7 +111,7 @@ export class AIPlayer {
       g: 0,
       h: this.manhattanDistance(start, goal),
       f: 0,
-      parent: null
+      parent: null,
     };
     startNode.f = startNode.g + startNode.h;
 
@@ -107,7 +127,10 @@ export class AIPlayer {
       closedSet.add(posKey);
 
       // Check if we reached the goal
-      if (currentNode.position.x === goal.x && currentNode.position.y === goal.y) {
+      if (
+        currentNode.position.x === goal.x &&
+        currentNode.position.y === goal.y
+      ) {
         // Reconstruct path
         const path: Position[] = [];
         let node: PathNode | null = currentNode;
@@ -119,17 +142,24 @@ export class AIPlayer {
       }
 
       // Check neighbors
-      const moves = this.getPossibleMoves(currentNode.position, { x: 0, y: 0 }, gameState);
-      
+      const moves = this.getPossibleMoves(
+        currentNode.position,
+        { x: 0, y: 0 },
+        gameState
+      );
+
       for (const move of moves) {
         const neighborPos = {
           x: currentNode.position.x + move.x,
-          y: currentNode.position.y + move.y
+          y: currentNode.position.y + move.y,
         };
 
         // Normalize position for wrapping
-        neighborPos.x = ((neighborPos.x % this.gridWidth) + this.gridWidth) % this.gridWidth;
-        neighborPos.y = ((neighborPos.y % this.gridHeight) + this.gridHeight) % this.gridHeight;
+        neighborPos.x =
+          ((neighborPos.x % this.gridWidth) + this.gridWidth) % this.gridWidth;
+        neighborPos.y =
+          ((neighborPos.y % this.gridHeight) + this.gridHeight) %
+          this.gridHeight;
 
         const neighborKey = `${neighborPos.x},${neighborPos.y}`;
         if (closedSet.has(neighborKey)) continue;
@@ -138,8 +168,10 @@ export class AIPlayer {
         const h = this.manhattanDistance(neighborPos, goal);
         const f = g + h;
 
-        const existingNode = openSet.find(node => 
-          node.position.x === neighborPos.x && node.position.y === neighborPos.y
+        const existingNode = openSet.find(
+          (node) =>
+            node.position.x === neighborPos.x &&
+            node.position.y === neighborPos.y
         );
 
         if (!existingNode || g < existingNode.g) {
@@ -148,7 +180,7 @@ export class AIPlayer {
             g,
             h,
             f,
-            parent: currentNode
+            parent: currentNode,
           };
 
           if (existingNode) {
@@ -173,23 +205,27 @@ export class AIPlayer {
     // Add food as target
     if (gameState.food) {
       const distance = this.manhattanDistance(head, gameState.food.position);
-      const timeRemaining = gameState.food.duration - (Date.now() - gameState.food.createdAt);
+      const timeRemaining =
+        gameState.food.duration - (Date.now() - gameState.food.createdAt);
       const urgency = Math.max(0, 1 - timeRemaining / gameState.food.duration);
-      
+
       targets.push({
         position: gameState.food.position,
         priority: 100 - distance + urgency * 50, // Higher priority for closer food and urgent food
-        type: 'food'
+        type: "food",
       });
     }
 
     // Add effect nodes as targets
-    gameState.effectNodes.forEach(node => {
+    gameState.effectNodes.forEach((node) => {
       const distance = this.manhattanDistance(head, node.position);
       let basePriority = 60; // Lower than food
 
       // Prioritize exploding nodes when there are many obstacles
-      if (node.effectType === EffectType.EXPLODING_NODE && gameState.obstacles.length > 2) {
+      if (
+        node.effectType === EffectType.EXPLODING_NODE &&
+        gameState.obstacles.length > 2
+      ) {
         basePriority = 80;
       }
 
@@ -201,7 +237,7 @@ export class AIPlayer {
       targets.push({
         position: node.position,
         priority: basePriority - distance,
-        type: 'effect'
+        type: "effect",
       });
     });
 
@@ -221,12 +257,12 @@ export class AIPlayer {
     if (target) {
       // Try to find path to target
       const path = this.findPath(head, target.position, gameState);
-      
+
       if (path.length > 0) {
         const nextPos = path[0];
         const move = {
           x: nextPos.x - head.x,
-          y: nextPos.y - head.y
+          y: nextPos.y - head.y,
         };
 
         // Handle wrapping
@@ -238,21 +274,30 @@ export class AIPlayer {
         }
 
         // Validate the move
-        if (this.isSafePosition({ x: head.x + move.x, y: head.y + move.y }, gameState)) {
+        if (
+          this.isSafePosition(
+            { x: head.x + move.x, y: head.y + move.y },
+            gameState
+          )
+        ) {
           return move;
         }
       }
     }
 
     // Fallback: find any safe move
-    const possibleMoves = this.getPossibleMoves(head, currentDirection, gameState);
-    
+    const possibleMoves = this.getPossibleMoves(
+      head,
+      currentDirection,
+      gameState
+    );
+
     if (possibleMoves.length > 0) {
       // Prefer continuing in the same direction if safe
-      const continueStraight = possibleMoves.find(move => 
-        move.x === currentDirection.x && move.y === currentDirection.y
+      const continueStraight = possibleMoves.find(
+        (move) => move.x === currentDirection.x && move.y === currentDirection.y
       );
-      
+
       if (continueStraight) {
         return continueStraight;
       }
@@ -269,7 +314,11 @@ export class AIPlayer {
   getDecisionExplanation(gameState: GameState): string {
     const target = this.evaluateTargets(gameState);
     const head = gameState.snake[0];
-    const possibleMoves = this.getPossibleMoves(head, gameState.direction, gameState);
+    const possibleMoves = this.getPossibleMoves(
+      head,
+      gameState.direction,
+      gameState
+    );
 
     if (!target) {
       return `No targets found. ${possibleMoves.length} safe moves available.`;
@@ -278,6 +327,10 @@ export class AIPlayer {
     const distance = this.manhattanDistance(head, target.position);
     const path = this.findPath(head, target.position, gameState);
 
-    return `Target: ${target.type} at (${target.position.x},${target.position.y}), Distance: ${distance}, Priority: ${target.priority.toFixed(1)}, Path length: ${path.length}`;
+    return `Target: ${target.type} at (${target.position.x},${
+      target.position.y
+    }), Distance: ${distance}, Priority: ${target.priority.toFixed(
+      1
+    )}, Path length: ${path.length}`;
   }
 }

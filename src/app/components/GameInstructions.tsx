@@ -2,14 +2,18 @@ interface GameInstructionsProps {
   aiMode?: boolean;
 }
 
-export default function GameInstructions({ aiMode = false }: GameInstructionsProps) {
+export default function GameInstructions({
+  aiMode = false,
+}: GameInstructionsProps) {
   return (
     <div className="text-sm text-gray-400 font-mono text-center max-w-md">
       {aiMode ? (
         <>
           <div className="text-blue-400 mb-2">🤖 AI Player Active</div>
           <div>AI uses A* pathfinding to navigate</div>
-          <div>Prioritizes food > exploding nodes > speed boosts</div>
+          <div>
+            Prioritizes food {">"} exploding nodes {">"} speed boosts
+          </div>
           <div>Avoids obstacles and its own tail</div>
           <div>Makes real-time tactical decisions</div>
         </>
