@@ -20,6 +20,7 @@ import {
   checkShardObstacleCollision,
   getRandomEffectType,
 } from "../utils/effectUtils";
+import { AIPlayer } from "../utils/aiPlayer";
 import { generateObstacle, generateFood } from "../utils/gameUtils";
 
 export function useGameLogic(canvasSize: { width: number; height: number }) {
@@ -35,12 +36,18 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
     activeEffects: [],
     gameSpeed: BASE_GAME_SPEED,
     shards: [],
+    aiMode: false,
   });
   const [lastEffectSpawnTime, setLastEffectSpawnTime] = useState(Date.now());
   const [debugMode, setDebugMode] = useState(false);
+  const [aiPlayer] = useState(() => new AIPlayer(canvasSize.width, canvasSize.height));
 
   const toggleDebugMode = useCallback(() => {
     setDebugMode((prev) => !prev);
+  }, []);
+
+  const toggleAIMode = useCallback(() => {
+    setGameState((prev) => ({ ...prev, aiMode: !prev.aiMode }));
   }, []);
   const [gameStarted, setGameStarted] = useState(false);
 
@@ -74,6 +81,26 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
     }
   }, [canvasSize, gameState.food]);
 
+  // Update AI player when canvas size changes
+  useEffect(() => {
+    aiPlayer.updateGridSize(canvasSize.width, canvasSize.height);
+  }, [canvasSize, aiPlayer]);
+
+  // AI move calculation
+  useEffect(() => {
+    if (gameState.aiMode && gameStarted && !gameState.gameOver) {
+      const aiMove = aiPlayer.calculateNextMove(gameState);
+      
+      setGameState((prev) => {
+        // Only update direction if it's different and valid
+        if (aiMove.x !== prev.direction.x || aiMove.y !== prev.direction.y) {
+          return { ...prev, direction: aiMove };
+        }
+        return prev;
+      });
+    }
+  }, [gameState, gameStarted, aiPlayer]);
+
   const resetGame = useCallback(() => {
     const newFood = generateFood(
       INITIAL_SNAKE,
@@ -81,7 +108,7 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
       canvasSize.width,
       canvasSize.height
     );
-    setGameState({
+    setGameState((prev) => ({
       snake: INITIAL_SNAKE,
       food: newFood,
       direction: INITIAL_DIRECTION,
@@ -93,7 +120,8 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
       activeEffects: [],
       gameSpeed: BASE_GAME_SPEED,
       shards: [],
-    });
+      aiMode: prev.aiMode, // Preserve AI mode setting
+    }));
     setLastEffectSpawnTime(Date.now());
     setGameStarted(false);
   }, [canvasSize, getHighScore]);
@@ -395,5 +423,7 @@ export function useGameLogic(canvasSize: { width: number; height: number }) {
     moveSnake,
     handleKeyPress,
     toggleDebugMode,
+    toggleAIMode,
+    aiPlayer,
   };
 }

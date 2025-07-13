@@ -1,7 +1,9 @@
 import { GameState } from '../types/game';
+import { AIPlayer } from '../utils/aiPlayer';
 
 interface DebugPanelProps {
   gameState: GameState;
+  aiPlayer?: AIPlayer;
 }
 
 function formatTime(timestamp: number): string {
@@ -18,12 +20,27 @@ function formatPosition(pos: { x: number; y: number }): string {
   return `(${pos.x}, ${pos.y})`;
 }
 
-export default function DebugPanel({ gameState }: DebugPanelProps) {
+export default function DebugPanel({ gameState, aiPlayer }: DebugPanelProps) {
   const currentTime = Date.now();
 
   return (
     <div className="bg-black bg-opacity-80 text-green-400 p-4 rounded border border-green-500 font-mono text-xs max-w-md">
-      <h3 className="text-green-300 font-bold mb-3 text-sm">🐛 DEBUG MODE</h3>
+      <h3 className="text-green-300 font-bold mb-3 text-sm">
+        🐛 DEBUG MODE {gameState.aiMode && '🤖 AI'}
+      </h3>
+      
+      {/* AI Information */}
+      {gameState.aiMode && aiPlayer && (
+        <div className="mb-3">
+          <div className="text-blue-300 font-semibold">AI Status:</div>
+          <div className="ml-2">
+            <div className="text-blue-200">Mode: Active</div>
+            <div className="text-xs text-blue-400">
+              {aiPlayer.getDecisionExplanation(gameState)}
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Game Speed */}
       <div className="mb-3">

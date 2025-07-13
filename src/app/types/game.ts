@@ -71,6 +71,7 @@ export interface GameState {
   activeEffects: ActiveEffect[];
   gameSpeed: number;
   shards: Shard[];
+  aiMode: boolean;
 }
 
 export interface CanvasSize {

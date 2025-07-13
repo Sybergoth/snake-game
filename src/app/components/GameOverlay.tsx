@@ -3,16 +3,27 @@ interface GameOverlayProps {
   score?: number;
   highScore?: number;
   onRestart?: () => void;
+  aiMode?: boolean;
 }
 
-export default function GameOverlay({ type, score, highScore, onRestart }: GameOverlayProps) {
+export default function GameOverlay({ type, score, highScore, onRestart, aiMode = false }: GameOverlayProps) {
   if (type === 'start') {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 text-green-500 text-center">
         <div className="font-mono">
           <div className="text-2xl mb-2">SNAKE GAME</div>
-          <div>Use arrow keys to move</div>
-          <div>Press any arrow key to start</div>
+          {aiMode ? (
+            <>
+              <div className="text-blue-400 mb-2">🤖 AI MODE ACTIVE</div>
+              <div>AI will play automatically</div>
+              <div>Press any arrow key to start</div>
+            </>
+          ) : (
+            <>
+              <div>Use arrow keys to move</div>
+              <div>Press any arrow key to start</div>
+            </>
+          )}
         </div>
       </div>
     );

@@ -20,13 +20,17 @@ export default function SnakeGame() {
     moveSnake,
     handleKeyPress,
     toggleDebugMode,
+    toggleAIMode,
+    aiPlayer,
   } = useGameLogic(canvasSize);
 
-  // Set up keyboard event listeners
+  // Set up keyboard event listeners (only when not in AI mode)
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [handleKeyPress]);
+    if (!gameState.aiMode) {
+      window.addEventListener("keydown", handleKeyPress);
+      return () => window.removeEventListener("keydown", handleKeyPress);
+    }
+  }, [handleKeyPress, gameState.aiMode]);
 
   // Set up game loop with dynamic speed
   useEffect(() => {
@@ -52,6 +56,12 @@ export default function SnakeGame() {
         >
           {debugMode ? "🐛 Debug ON" : "🐛 Debug"}
         </button>
+        <button
+          onClick={toggleAIMode}
+          className="px-3 py-1 bg-gray-700 text-blue-400 border border-blue-500 hover:bg-gray-600 font-mono text-sm rounded"
+        >
+          {gameState.aiMode ? "🤖 AI ON" : "🤖 AI"}
+        </button>
       </div>
 
       <div className="relative">
@@ -62,7 +72,9 @@ export default function SnakeGame() {
           className="border-2 border-green-500 bg-black"
         />
 
-        {!gameStarted && !gameState.gameOver && <GameOverlay type="start" />}
+        {!gameStarted && !gameState.gameOver && (
+          <GameOverlay type="start" aiMode={gameState.aiMode} />
+        )}
 
         {gameState.gameOver && (
           <GameOverlay
@@ -70,13 +82,14 @@ export default function SnakeGame() {
             score={gameState.score}
             highScore={gameState.highScore}
             onRestart={resetGame}
+            aiMode={gameState.aiMode}
           />
         )}
       </div>
 
       <div className="flex gap-4 items-start">
-        <GameInstructions />
-        {debugMode && <DebugPanel gameState={gameState} />}
+        <GameInstructions aiMode={gameState.aiMode} />
+        {debugMode && <DebugPanel gameState={gameState} aiPlayer={aiPlayer} />}
       </div>
     </div>
   );
